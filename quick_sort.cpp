@@ -92,9 +92,10 @@ void quickSort_random(vector<int> &vec, int low, int high)
 int main()
 {
     const int START_SIZE = 5'000;
-    const int MAX_SIZE = 2'00'000;
+    const int MAX_SIZE = 1'20'000;
     const int STEP_SIZE = 2'000;
-    const int TRIALS = 200;
+    const int FIRST_TRIALS = 1;
+    const int RANDOM_TRIALS = 30;
 
     srand(time(nullptr));
 
@@ -106,36 +107,46 @@ int main()
         double totalFirst = 0;
         double totalRandom = 0;
 
-        for (int t = 0; t < TRIALS; t++)
+        for (int t = 0; t < FIRST_TRIALS; t++)
         {
             vector<int> arr1(size + 1);
+
+            for (int i = 0; i < size; i++)
+            {
+                arr1[i] = rand() % size;
+            }
+
+            arr1[size] = INT_MAX;
+
+            sort(arr1.begin(), arr1.end());
+            auto start1 = high_resolution_clock::now();
+            quickSort_first(arr1, 0, size - 1);
+            auto end1 = high_resolution_clock::now();
+
+            totalFirst += duration<double, micro>(end1 - start1).count();
+        }
+
+        for (int t = 0; t < RANDOM_TRIALS; t++)
+        {
             vector<int> arr2(size + 1);
 
             for (int i = 0; i < size; i++)
             {
-                int val = rand() % size;
-                arr1[i] = val;
-                arr2[i] = val;
+                arr2[i] = rand() % size;
             }
 
-            arr1[size] = INT_MAX;
             arr2[size] = INT_MAX;
-
-            auto start1 = high_resolution_clock::now();
-            quickSort_first(arr1, 0, size - 1);
-            auto end1 = high_resolution_clock::now();
 
             sort(arr2.begin(), arr2.end());
             auto start2 = high_resolution_clock::now();
             quickSort_random(arr2, 0, size - 1);
             auto end2 = high_resolution_clock::now();
 
-            totalFirst += duration<double, micro>(end1 - start1).count();
             totalRandom += duration<double, micro>(end2 - start2).count();
         }
 
-        double avgFirst = totalFirst / TRIALS;
-        double avgRandom = totalRandom / TRIALS;
+        double avgFirst = totalFirst / FIRST_TRIALS;
+        double avgRandom = totalRandom / RANDOM_TRIALS;
 
         fout << size << "\t" << avgFirst << "\t" << avgRandom << "\n";
 
